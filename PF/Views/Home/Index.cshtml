@@ -1,0 +1,57 @@
+﻿@model ProdutoDisplayModel
+@{
+    ViewData["Title"] = "Marketplace";
+}
+
+<div class="my-2">
+    <form asp-action="Index" class="row row-cols-lg-auto g-3 align-items-center">
+        <div class="col-12">
+            <label class="visually-hidden" for="categoriaId">Categorias</label>
+
+            <select class="form-select" name="categoriaId" id="categoriaId">
+
+                <option value="0"selected>Categorias</option>
+                @foreach (var categoria in Model.Categorias)
+                {
+                <option selected="@(categoria.Id == Model.CategoriaId)" value="@categoria.Id">@categoria.CategoriaNome</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-12">
+            <label class="visually-hidden" for="sterm">Pesquisar</label>
+            <div class="input-group">
+                <div class="input-group-text"></div>
+                <input type="text" value="@Model.sTerm" class="form-control" id="sterm" name="sterm" placeholder="Pesquisar">
+            </div>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="/Home/Index" class="btn btn-primary">Redefinir</a>
+        </div>
+    </form>
+</div>
+
+<div class="w-100 mt-4 d-flex flex-wrap justify-content-between">
+    @foreach (var produto in Model.Produtos)
+    {
+        <div class="card mx-2 mb-4" style="width: 16rem;">
+            @if (string.IsNullOrEmpty(produto.Imagem))
+            {
+                <img style="width: 100%; height: 300px" src="/images/No_Image_Available.jpg" class="card-img-top" alt="...">
+            }
+            else
+            {
+                <img style="width: 100%; height: 300px" src="/images/@produto.Imagem" class="card-img-top" alt="...">
+            }
+            <div class="card-body">
+                <h5 class="card-title">@produto.ProdutoNome</h5>
+                <p class="card-text">R$ @produto.ProdutoPreco</p>
+                <p class="card-text">@produto.Categoria</p>
+                <p class="card-text">@produto.ProdutoDescricao</p>
+                <a href="#" class="btn btn-primary">Adicionar ao carrinho</a>
+            </div>
+        </div>
+    }
+</div>
