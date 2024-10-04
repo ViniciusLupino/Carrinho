@@ -11,5 +11,6 @@ namespace PF.Models
         public string UserId { get; set; }
 
         public bool Deletado { get; set; } = false;
+        public ICollection<DetalheCarrinho> CarrinhoDetalhes { get; set; }
     }
 }
