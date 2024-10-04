@@ -17,6 +17,7 @@ builder.Services
     .AddDefaultTokenProviders();
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<ILojaRepositorio, LojaRepositorio>();
+builder.Services.AddTransient<ICarrinhoRepositorio, CarrinhoRepositorio>();
 
 var app = builder.Build();
 

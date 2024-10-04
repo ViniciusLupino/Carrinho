@@ -5,7 +5,7 @@ using System.Net.Quic;
 
 namespace PF.Repositories
 {
-    public class CarrinhoRepositorio
+    public class CarrinhoRepositorio : ICarrinhoRepositorio
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<IdentityUser> _userManager;
@@ -102,9 +102,16 @@ namespace PF.Repositories
 
         public async Task<IEnumerable<Carrinho>> GetUserCarrinho()
         {
-
+            var userId = GetUserId();
+            if (userId == null)
+                throw new Exception("Identificador de usuário inválido!");
+            var carrinhoDeCompras = _db.Carrinhos
+                .Include(a => a.CarrinhoDetalhes)
+                .ThenInclude(a => a.Produto)
+                .ThenInclude(a => a.Categoria)
+                .Where(a => a.UserId == userId);
+            return carrinhoDeCompras;
         }
-
 
         private async Task<Carrinho> GetCarrinho(string userId)
         {
