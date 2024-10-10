@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
 using System.Drawing.Text;
 using System.Net.Quic;
 
@@ -17,14 +18,14 @@ namespace PF.Repositories
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<bool> AddItem(int itemId, int qtd)
+        public async Task<int> AddItem(int itemId, int qtd)
         {
+            string userId = GetUserId();
             using var transaction = _db.Database.BeginTransaction();
             try
             {
-                string userId = GetUserId();
                 if (string.IsNullOrEmpty(userId))
-                    return false;
+                    throw new Exception("Usuário não está logado!");
 
                 var cart = await GetCarrinho(userId);
                 if (cart is null)
@@ -54,33 +55,38 @@ namespace PF.Repositories
                 }
                 _db.SaveChanges();
                 transaction.Commit();
-                return true;
             }
             catch (Exception ex)
             {
-                return false;
+
             }
+            var totalItems = await GetCarrinhoItemCount(userId);
+            return totalItems;
         }
 
-        public async Task<bool> RemoverItem(int itemId)
+        public async Task<int> RemoverItem(int itemId)
         {
+            string userId = GetUserId();
+
             //using var transaction = _db.Database.BeginTransaction();
             try
             {
-                string userId = GetUserId();
                 if (string.IsNullOrEmpty(userId))
-                    return false;
+                    throw new Exception("Usuário não está logado!");
 
                 var cart = await GetCarrinho(userId);
                 if (cart is null)
                 {
-                    return false;
+                    throw new Exception("Carrinho inválido!");
+
                 }
 
-                var cartItem = _db.DetalheCarrinhos.FirstOrDefault(a => a.CarrinhoId == cart.Id && a.Id == itemId);
+                var cartItem = _db.DetalheCarrinhos
+                                .FirstOrDefault(a => a.CarrinhoId == cart.Id && a.Id == itemId);
                 if (cartItem is null)
                 {
-                    return false;
+                    throw new Exception("Carrinho vazio!");
+
                 }
                 else if (cartItem.Quantidade == 1)
                 {
@@ -92,12 +98,14 @@ namespace PF.Repositories
                 }
                 _db.SaveChanges();
                 //transaction.Commit();
-                return true;
+                
             }
             catch (Exception ex)
             {
-                return false;
+                
             }
+            var totalItems = await GetCarrinhoItemCount(userId);
+            return totalItems;
         }
 
         public async Task<IEnumerable<Carrinho>> GetUserCarrinho()
@@ -117,6 +125,22 @@ namespace PF.Repositories
         {
             var cart = await _db.Carrinhos.FirstOrDefaultAsync(c => c.UserId == userId);
             return cart;
+        }
+
+        public async Task<int> GetCarrinhoItemCount(string userId = "")
+        {
+            if (!string.IsNullOrEmpty(userId))
+            {
+                userId = GetUserId();
+            }
+
+            var data = await (from cart in _db.Carrinhos
+                              join cartItem in _db.DetalheCarrinhos
+                              on cart.Id equals cartItem.Id
+                              select new { cartItem }).ToListAsync();
+            return data.Count;
+
+
         }
 
         private string GetUserId()

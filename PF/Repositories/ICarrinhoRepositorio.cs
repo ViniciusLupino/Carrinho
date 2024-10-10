@@ -2,8 +2,9 @@
 {
     public interface ICarrinhoRepositorio
     {
-        Task<bool> AddItem(int itemId, int qtd);
-        Task<bool> RemoverItem(int itemId);
+        Task<int> AddItem(int itemId, int qtd);
+        Task<int> RemoverItem(int itemId);
         Task<IEnumerable<Carrinho>> GetUserCarrinho();
+        Task<int> GetCarrinhoItemCount(string userId = "");
     }
 }
