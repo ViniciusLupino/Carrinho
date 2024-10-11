@@ -10,10 +10,10 @@
 
             <select class="form-select" name="categoriaId" id="categoriaId">
 
-                <option value="0"selected>Categorias</option>
+                <option value="0" selected>Categorias</option>
                 @foreach (var categoria in Model.Categorias)
                 {
-                <option selected="@(categoria.Id == Model.CategoriaId)" value="@categoria.Id">@categoria.CategoriaNome</option>
+                    <option selected="@(categoria.Id == Model.CategoriaId)" value="@categoria.Id">@categoria.CategoriaNome</option>
                 }
             </select>
         </div>
@@ -50,8 +50,26 @@
                 <p class="card-text">R$ @produto.ProdutoPreco</p>
                 <p class="card-text">@produto.Categoria</p>
                 <p class="card-text">@produto.ProdutoDescricao</p>
-                <a href="#" class="btn btn-primary">Adicionar ao carrinho</a>
+                <button type="button" onclick="add(@produto.Id)" class="btn btn-primary">Adicionar ao carrinho</button>
             </div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        
+        async function add(itemId) {
+            try {
+                var response = await fetch(`/Carrinho/AddItem?itemId=${itemId}`);
+                var resultado = await response.json();
+                if (response.status == 200) {
+                    console.log(resultado);
+                    var countEl = document.getElementById("contagemCarrinho");
+                    countEl.innerHTML = resultado;
+                }
+            }
+            catch (err) { console.log(err) }
+        }
+    </script>
+}

@@ -4,7 +4,7 @@
     {
         Task<int> AddItem(int itemId, int qtd);
         Task<int> RemoverItem(int itemId);
-        Task<IEnumerable<Carrinho>> GetUserCarrinho();
+        Task<Carrinho> GetUserCarrinho();
         Task<int> GetCarrinhoItemCount(string userId = "");
     }
 }

@@ -25,7 +25,7 @@ namespace PF.Repositories
             try
             {
                 if (string.IsNullOrEmpty(userId))
-                    throw new Exception("Usuário não está logado!");
+                    throw new UnauthorizedAccessException("Usuário não está logado!");
 
                 var cart = await GetCarrinho(userId);
                 if (cart is null)
@@ -38,13 +38,15 @@ namespace PF.Repositories
                 }
                 _db.SaveChanges();
 
-                var cartItem = _db.DetalheCarrinhos.FirstOrDefault(a => a.CarrinhoId == cart.Id && a.Id == itemId);
-                if (cartItem is not null)
+                var cartItem = _db.DetalheCarrinhos
+                                  .FirstOrDefault(a => a.CarrinhoId == cart.Id && a.ProdutoId == itemId);
+                if (cartItem != null)
                 {
                     cartItem.Quantidade += qtd;
                 }
                 else
                 {
+                    var produto = _db.Produtos.Find(itemId);
                     cartItem = new DetalheCarrinho
                     {
                         ProdutoId = itemId,
@@ -98,26 +100,26 @@ namespace PF.Repositories
                 }
                 _db.SaveChanges();
                 //transaction.Commit();
-                
+
             }
             catch (Exception ex)
             {
-                
+
             }
             var totalItems = await GetCarrinhoItemCount(userId);
             return totalItems;
         }
 
-        public async Task<IEnumerable<Carrinho>> GetUserCarrinho()
+        public async Task<Carrinho> GetUserCarrinho()
         {
             var userId = GetUserId();
             if (userId == null)
                 throw new Exception("Identificador de usuário inválido!");
-            var carrinhoDeCompras = _db.Carrinhos
+            var carrinhoDeCompras = await _db.Carrinhos
                 .Include(a => a.CarrinhoDetalhes)
                 .ThenInclude(a => a.Produto)
                 .ThenInclude(a => a.Categoria)
-                .Where(a => a.UserId == userId);
+                .Where(a => a.UserId == userId).FirstOrDefaultAsync();
             return carrinhoDeCompras;
         }
 
@@ -137,7 +139,7 @@ namespace PF.Repositories
             var data = await (from cart in _db.Carrinhos
                               join cartItem in _db.DetalheCarrinhos
                               on cart.Id equals cartItem.Id
-                              select new { cartItem }).ToListAsync();
+                              select cartItem).ToListAsync();
             return data.Count;
 
 
